@@ -6,6 +6,7 @@
 
 import { renderDashboard } from './dashboard.js';
 import { renderMotocicletas, abrirNuevaMoto } from './motocicletas.js';
+import { renderVentas, abrirNuevaVenta } from './ventas.js';
 import { renderLogin } from './login.js';
 import { initAuth, session, onSessionChange, canAccess, logout } from './auth.js';
 
@@ -35,6 +36,11 @@ const ROUTES = {
     title: 'Motocicletas',
     render: renderMotocicletas,
     fabAction: () => abrirNuevaMoto(document.getElementById('app-view')),
+  },
+  ventas: {
+    title: 'Ventas',
+    render: renderVentas,
+    fabAction: () => abrirNuevaVenta(document.getElementById('app-view')),
   },
 };
 

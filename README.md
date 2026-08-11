@@ -2,7 +2,21 @@
 
 Sistema de gestión para venta de motocicletas de contado y crédito. PWA mobile-first, sin build tools, Firebase + GitHub Pages.
 
-## Estado: Motocicletas/Inventario completo (sobre Fase 1+2)
+## Estado: Motocicletas/Inventario + Ventas completos (sobre Fase 1+2)
+
+**Módulo Ventas** (secciones 13-15):
+
+- Contado y crédito desde el mismo formulario, con toggle
+- Contado: descuento, gastos, forma de pago, total y utilidad calculados en vivo
+- Crédito: enganche, interés %, número de pagos, periodicidad, saldo financiado, total a pagar e importe por pago — todo calculado automáticamente
+- Al registrar una venta, la moto seleccionada cambia a estado "vendida" automáticamente (ya no aparece disponible para otra venta)
+- Solo muestra motos con estado "disponible" en el selector
+- Cliente se captura ligero (nombre + WhatsApp) dentro del formulario — el CRM completo (Clientes) llega al final sin perder estos datos, se vincula después por teléfono
+- Historial de ventas + resumen del mes (total y utilidad)
+- FAB contextual en `#ventas` abre directo el formulario
+- Dashboard actualizado: Inventario, Ventas y Créditos ahora leen datos reales (ya no son demo). Finanzas sigue en demo hasta construir Inversiones/Gastos/Finanzas — sin módulo de Pagos, "cobrado" y "morosos" en créditos se muestran en 0 (no hay overclaim de datos que no existen todavía)
+
+**Módulo Motocicletas/Inventario** — sin cambios respecto a la entrega anterior.
 
 **Módulo Motocicletas/Inventario** (adelantado — ver "Orden real de construcción" abajo):
 

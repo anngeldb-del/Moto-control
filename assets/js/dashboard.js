@@ -1,21 +1,15 @@
 // ==========================================================================
 // MotoControl — dashboard.js
-// Centro de control del negocio. Fase 1: interfaz + datos DEMO.
-// Fase 2+: se conecta a Firestore vía firebase.js (ver TODOs).
+// Centro de control del negocio.
+// Inventario, Ventas y Créditos: datos reales (motocicletas.js / ventas.js).
+// Finanzas: sigue en DEMO hasta construir Inversiones/Gastos/Finanzas.
 // ==========================================================================
 
-// TODO(Fase 2): reemplazar por datos reales desde Firestore (colecciones:
-// motocicletas, ventas, creditos, pagos, gastos)
-const DEMO = {
-  inventario: { disponibles: 8, apartadas: 2, vendidas: 23, reparacion: 1, valor: 612000 },
-  ventas: { hoy: 1, mes: 9, contado: 4, credito: 5 },
-  creditos: { activos: 12, financiado: 480000, cobrado: 210500, saldo: 269500, vencidos: 3, morosos: 2 },
-  finanzas: { capital: 158200, ingresos: 342000, gastos: 61400, utilidadBruta: 122000, utilidadNeta: 96500, disponible: 158200 },
-};
+import { getAll } from './data.js';
+import { money, hoyISO, calcularCostoTotal } from './utilidades.js';
 
-function money(n) {
-  return '$' + Math.round(n).toLocaleString('es-MX');
-}
+// TODO: reemplazar por datos reales cuando exista el módulo de Finanzas.
+const DEMO_FINANZAS = { capital: 158200, ingresos: 342000, gastos: 61400, utilidadBruta: 122000, utilidadNeta: 96500, disponible: 158200 };
 
 function gauge(pct, value, label, sub, color) {
   const clamped = Math.max(0, Math.min(100, pct));
@@ -43,9 +37,52 @@ function statCard(value, label, delta) {
   `;
 }
 
+function calcularInventario() {
+  const motos = getAll('motocicletas');
+  const disponibles = motos.filter((m) => m.estado === 'disponible');
+  const apartadas = motos.filter((m) => m.estado === 'apartada');
+  const vendidas = motos.filter((m) => m.estado === 'vendida');
+  const reparacion = motos.filter((m) => m.estado === 'reparacion');
+  const valor = [...disponibles, ...apartadas]
+    .reduce((sum, m) => sum + calcularCostoTotal(m.costoAdquisicion, m.gastosAdicionales), 0);
+  return { disponibles: disponibles.length, apartadas: apartadas.length, vendidas: vendidas.length, reparacion: reparacion.length, valor };
+}
+
+function calcularVentas() {
+  const ventas = getAll('ventas');
+  const hoy = hoyISO();
+  const mesActual = hoy.slice(0, 7);
+  const delMes = ventas.filter((v) => (v.fecha || '').startsWith(mesActual));
+  return {
+    hoy: ventas.filter((v) => v.fecha === hoy).length,
+    mes: delMes.length,
+    contado: delMes.filter((v) => v.tipo === 'contado').length,
+    credito: delMes.filter((v) => v.tipo === 'credito').length,
+  };
+}
+
+function calcularCreditos() {
+  const ventas = getAll('ventas').filter((v) => v.tipo === 'credito');
+  const financiado = ventas.reduce((s, v) => s + (Number(v.saldoFinanciado) || 0), 0);
+  // Sin módulo de Pagos todavía, "cobrado" y "vencidos/morosos" se estiman en 0
+  // hasta que exista el registro real de pagos (próxima fase).
+  return {
+    activos: ventas.filter((v) => v.creditoEstado === 'activo').length,
+    financiado,
+    cobrado: 0,
+    saldo: financiado,
+    vencidos: 0,
+    morosos: 0,
+  };
+}
+
 export function renderDashboard(container) {
-  const { inventario, ventas, creditos, finanzas } = DEMO;
-  const carteraVencidaPct = Math.round((creditos.vencidos / creditos.activos) * 100);
+  const inventario = calcularInventario();
+  const ventas = calcularVentas();
+  const creditos = calcularCreditos();
+  const finanzas = DEMO_FINANZAS;
+  const totalActivas = inventario.disponibles + inventario.apartadas + inventario.reparacion;
+  const carteraVencidaPct = creditos.activos > 0 ? Math.round((creditos.vencidos / creditos.activos) * 100) : 0;
 
   container.innerHTML = `
 
@@ -64,12 +101,12 @@ export function renderDashboard(container) {
 
     <div class="section-head">
       <h2>Tablero — vista de 30 segundos</h2>
-      <span class="sub">DATOS DEMO</span>
+      <span class="sub">Inventario/Ventas/Créditos: reales · Finanzas: demo</span>
     </div>
     <div class="grid grid-3">
-      ${gauge(Math.round((inventario.disponibles / (inventario.disponibles + inventario.apartadas + inventario.reparacion)) * 100),
+      ${gauge(totalActivas > 0 ? Math.round((inventario.disponibles / totalActivas) * 100) : 0,
               inventario.disponibles, 'Disponibles', `${money(inventario.valor)} inv.`, 'var(--ok)')}
-      ${gauge(Math.round((ventas.credito / (ventas.contado + ventas.credito)) * 100),
+      ${gauge(ventas.mes > 0 ? Math.round((ventas.credito / ventas.mes) * 100) : 0,
               ventas.mes, 'Ventas del mes', `${ventas.contado} contado / ${ventas.credito} crédito`, 'var(--accent)')}
       ${gauge(carteraVencidaPct, creditos.morosos, 'Clientes morosos', `${money(creditos.saldo)} saldo pendiente`, carteraVencidaPct > 20 ? 'var(--danger)' : 'var(--warn)')}
     </div>
@@ -89,7 +126,7 @@ export function renderDashboard(container) {
       ${statCard(creditos.vencidos, 'Pagos vencidos', { dir: 'down', text: `${creditos.morosos} morosos` })}
     </div>
 
-    <div class="section-head"><h2>Finanzas</h2></div>
+    <div class="section-head"><h2>Finanzas <span class="sub" style="text-transform:none;">(demo)</span></h2></div>
     <div class="grid grid-2">
       ${statCard(money(finanzas.capital), 'Capital disponible')}
       ${statCard(money(finanzas.utilidadNeta), 'Utilidad neta', { dir: 'up', text: `${money(finanzas.ingresos)} ingresos` })}
@@ -100,7 +137,7 @@ export function renderDashboard(container) {
     <div class="section-head"><h2>Contratos pendientes</h2></div>
     <div class="card empty-state">
       <div class="ico">📄</div>
-      <div class="txt">Sin contratos pendientes (demo). Este bloque se activa en Fase 9.</div>
+      <div class="txt">Módulo de Contratos aún no construido.</div>
     </div>
   `;
 }

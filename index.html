@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MotoControl</title>
+<meta name="theme-color" content="#0A0C10">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<div id="offline-banner">MODO SIN CONEXIÓN — los cambios se sincronizarán al volver internet</div>
+
+<div id="app-shell">
+
+  <!-- Sidebar: desktop -->
+  <nav id="sidebar" aria-label="Navegación principal"></nav>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <header id="topbar">
+      <div class="brand">
+        <div class="mark"><span>M</span></div>
+        <h1 id="page-title">Dashboard</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="user-pill" class="status-pill" style="display:none;"></span>
+        <span id="status-pill" class="status-pill online">EN LÍNEA</span>
+      </div>
+    </header>
+
+    <main id="app-view" role="main"></main>
+  </div>
+
+</div>
+
+<!-- Bottom nav: mobile -->
+<nav id="bottomnav" aria-label="Navegación principal"></nav>
+
+<!-- Floating action button -->
+<button id="fab" aria-label="Acción rápida">+</button>
+
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+rules_version = '2';
+
+// ==========================================================================
+// MotoControl — firestore.rules
+// Fase 2: reglas de seguridad por rol (sección 40-41 del Prompt Maestro).
+//
+// Roles (definidos en usuarios/{uid}.rol):
+//   administrador — acceso total, incluyendo finanzas/reportes/configuración
+//   empleado      — clientes, motocicletas, ventas, créditos (lectura),
+//                   pagos, contratos/documentos. Sin acceso a finanzas,
+//                   reportes, inversiones, gastos ni configuración.
+//
+// IMPORTANTE: estas reglas asumen que cada usuario autenticado tiene un
+// documento en usuarios/{uid} con { rol: 'administrador' | 'empleado',
+// activo: true|false }. Ese documento debe crearse manualmente (o vía
+// Cloud Function) al dar de alta un usuario — nunca debe poder
+// autoescribirse el propio rol.
+// ==========================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- Helpers -------------------------------------------------------
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    function estaActivo() {
+      return estaAutenticado() && perfil().activo == true;
+    }
+
+    function esAdmin() {
+      return estaActivo() && perfil().rol == 'administrador';
+    }
+
+    function esEmpleado() {
+      return estaActivo() && perfil().rol == 'empleado';
+    }
+
+    function esUsuarioValido() {
+      return esAdmin() || esEmpleado();
+    }
+
+    // ---- usuarios --------------------------------------------------------
+    // Un usuario puede leer su propio perfil. Solo un admin puede crear,
+    // modificar o eliminar perfiles (evita que alguien se autoasigne rol).
+    match /usuarios/{uid} {
+      allow read: if estaAutenticado() && (request.auth.uid == uid || esAdmin());
+      allow write: if esAdmin();
+    }
+
+    // ---- Operación diaria: clientes, motocicletas, ventas, créditos,
+    //      pagos, contratos, documentos — admin y empleado ----------------
+    match /clientes/{docId} {
+      allow read, create, update: if esUsuarioValido();
+      allow delete: if esAdmin();
+    }
+
+    match /motocicletas/{docId} {
+      allow read, create, update: if esUsuarioValido();
+      allow delete: if esAdmin();
+    }
+
+    match /ventas/{docId} {
+      allow read, create: if esUsuarioValido();
+      allow update, delete: if esAdmin(); // una venta registrada no la edita cualquiera
+    }
+
+    match /creditos/{docId} {
+      allow read: if esUsuarioValido();
+      allow create, update: if esUsuarioValido();
+      allow delete: if esAdmin();
+    }
+
+    match /pagos/{docId} {
+      allow read, create: if esUsuarioValido();
+      allow update, delete: if esAdmin(); // cancelar/editar un pago es sensible
+    }
+
+    match /contratos/{docId} {
+      allow read, create, update: if esUsuarioValido();
+      allow delete: if esAdmin();
+    }
+
+    match /documentos/{docId} {
+      allow read, create: if esUsuarioValido();
+      allow update, delete: if esAdmin();
+    }
+
+    // ---- Solo administrador: finanzas, reportes, inversiones, gastos,
+    //      configuración, auditoría ---------------------------------------
+    match /inversiones/{docId} {
+      allow read, write: if esAdmin();
+    }
+
+    match /gastos/{docId} {
+      allow read, write: if esAdmin();
+    }
+
+    match /configuracion/{docId} {
+      allow read: if esUsuarioValido(); // empleados necesitan leer datos de empresa/documentos
+      allow write: if esAdmin();
+    }
+
+    match /proveedores/{docId} {
+      allow read, create, update: if esUsuarioValido();
+      allow delete: if esAdmin();
+    }
+
+    // ---- Auditoría: solo lectura para admin, escritura únicamente
+    //      desde el propio sistema (nunca se borra ni edita un registro) --
+    match /auditoria/{docId} {
+      allow read: if esAdmin();
+      allow create: if esUsuarioValido();
+      allow update, delete: if false;
+    }
+
+    // Cualquier colección no contemplada explícitamente queda cerrada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -13,6 +13,26 @@
 <link rel="stylesheet" href="assets/css/styles.css">
 <!-- Generación de PDF (Contratos, sección 27) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Salvavidas: si el JS de la app falla (red, error de módulo), esto lo
+     muestra en pantalla en vez de dejar una pantalla en blanco silenciosa. -->
+<script>
+window.addEventListener('error', function (e) {
+  var el = document.getElementById('app-view');
+  if (el && !window.__mcLoaded) {
+    el.innerHTML = '<div style="padding:40px 20px;color:#FF3B3B;font-family:sans-serif;font-size:13px;line-height:1.6;">' +
+      '⚠️ Error cargando la app:<br><code style="word-break:break-all;">' + (e.message || 'desconocido') + '</code>' +
+      '<br><br>Prueba con otra red (datos móviles), revisa que no haya un bloqueador de contenido activo, o recarga.</div>';
+  }
+});
+window.addEventListener('unhandledrejection', function (e) {
+  var el = document.getElementById('app-view');
+  if (el && !window.__mcLoaded) {
+    el.innerHTML = '<div style="padding:40px 20px;color:#FF3B3B;font-family:sans-serif;font-size:13px;line-height:1.6;">' +
+      '⚠️ Error cargando un módulo:<br><code style="word-break:break-all;">' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '</code>' +
+      '<br><br>Prueba con otra red (datos móviles), revisa que no haya un bloqueador de contenido activo, o recarga.</div>';
+  }
+});
+</script>
 </head>
 <body>
 
@@ -35,7 +55,12 @@
       </div>
     </header>
 
-    <main id="app-view" role="main"></main>
+    <main id="app-view" role="main">
+      <div style="text-align:center;padding:60px 20px;color:#8B94A3;font-family:sans-serif;">
+        <div style="font-size:13px;">Cargando MotoControl…</div>
+        <div style="font-size:11px;margin-top:8px;">Si esto no cambia en unos segundos, hay un problema de red o de JavaScript. Revisa tu conexión o avísale a Angel.</div>
+      </div>
+    </main>
   </div>
 
 </div>

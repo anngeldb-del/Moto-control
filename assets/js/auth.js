@@ -1,18 +1,17 @@
 // ==========================================================================
 // MotoControl — auth.js
 // Fase 2: autenticación + roles (ADMINISTRADOR / EMPLEADO — sección 40).
+// Consume el SDK de Firebase vía getSdk() (import dinámico en firebase.js)
+// — este archivo NUNCA importa nada del CDN de Firebase de forma estática.
 // ==========================================================================
 
-import {
-  initFirebase, auth, db, CONFIGURED,
-  signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, getDoc,
-} from './firebase.js';
+import { initFirebase, auth, db, CONFIGURED, getSdk } from './firebase.js';
 
 // ---------------------------------------------------------------------
 // Estado de sesión en memoria (fuente de verdad para el router)
 // ---------------------------------------------------------------------
 export const session = {
-  ready: false,      // true una vez que Firebase ya resolvió el estado inicial
+  ready: false,      // true una vez que Firebase (o el modo demo) ya resolvió el estado inicial
   user: null,        // objeto de Firebase Auth (o null)
   role: null,         // 'administrador' | 'empleado' | null
   nombre: null,
@@ -42,11 +41,13 @@ export function canAccess(route, role) {
 // Login / logout
 // ---------------------------------------------------------------------
 export async function login(email, password) {
-  if (!initFirebase()) {
-    return { ok: false, error: 'Firebase no está configurado todavía (falta DEFAULT_FB_CONFIG en firebase.js).' };
+  const ok = await initFirebase();
+  if (!ok) {
+    return { ok: false, error: 'Firebase no está configurado todavía (falta DEFAULT_FB_CONFIG en firebase.js), o no se pudo cargar por red.' };
   }
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    const { authMod } = getSdk();
+    await authMod.signInWithEmailAndPassword(auth, email, password);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: mapAuthError(err.code) };
@@ -62,7 +63,8 @@ export async function logout() {
     notify();
     return;
   }
-  if (auth) await signOut(auth);
+  const sdk = getSdk();
+  if (auth && sdk) await sdk.authMod.signOut(auth);
 }
 
 // ---------------------------------------------------------------------
@@ -99,7 +101,8 @@ function mapAuthError(code) {
 // ---------------------------------------------------------------------
 async function loadUserProfile(uid) {
   try {
-    const snap = await getDoc(doc(db, 'usuarios', uid));
+    const { fsMod } = getSdk();
+    const snap = await fsMod.getDoc(fsMod.doc(db, 'usuarios', uid));
     if (snap.exists()) {
       const data = snap.data();
       return { rol: data.rol || 'empleado', nombre: data.nombre || null, activo: data.activo !== false };
@@ -111,10 +114,13 @@ async function loadUserProfile(uid) {
 }
 
 // ---------------------------------------------------------------------
-// Inicialización: se llama una sola vez desde app.js
+// Inicialización: se llama una sola vez desde app.js. Es async pero
+// app.js no necesita esperarla — el router ya escucha onSessionChange
+// y se vuelve a pintar solo cuando session.ready pase a true.
 // ---------------------------------------------------------------------
-export function initAuth() {
-  if (!initFirebase()) {
+export async function initAuth() {
+  const ok = await initFirebase();
+  if (!ok) {
     session.ready = true;
     session.user = null;
     session.role = null;
@@ -122,7 +128,8 @@ export function initAuth() {
     return;
   }
 
-  onAuthStateChanged(auth, async (user) => {
+  const { authMod } = getSdk();
+  authMod.onAuthStateChanged(auth, async (user) => {
     if (user) {
       const profile = await loadUserProfile(user.uid);
       if (!profile.activo) {

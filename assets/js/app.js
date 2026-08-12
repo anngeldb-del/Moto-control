@@ -221,6 +221,7 @@ function handleRoute() {
 onSessionChange(handleRoute);
 window.addEventListener('hashchange', handleRoute);
 window.addEventListener('DOMContentLoaded', () => {
+  window.__mcLoaded = true; // el salvavidas de index.html deja de intervenir
   initAuth();
   handleRoute();
 });

@@ -28,7 +28,7 @@ export const DEFAULT_FB_CONFIG = {
   appId: 'PENDIENTE_FASE_2',
 };
 
-const CONFIGURED = DEFAULT_FB_CONFIG.apiKey !== 'PENDIENTE_FASE_2';
+export const CONFIGURED = DEFAULT_FB_CONFIG.apiKey !== 'PENDIENTE_FASE_2';
 
 export let app = null;
 export let auth = null;

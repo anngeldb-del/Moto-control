@@ -3,7 +3,8 @@
 // Fase 2: pantalla de acceso.
 // ==========================================================================
 
-import { login } from './auth.js';
+import { login, loginDemo } from './auth.js';
+import { CONFIGURED } from './firebase.js';
 
 export function renderLogin(container) {
   container.innerHTML = `
@@ -40,6 +41,18 @@ export function renderLogin(container) {
           Entrar
         </button>
       </form>
+
+      ${!CONFIGURED ? `
+        <div style="margin-top:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">
+            Firebase todavía no está conectado
+          </div>
+          <button id="login-demo-btn" style="width:100%;padding:11px;border-radius:var(--radius-sm);
+            border:1px dashed var(--border);background:transparent;color:var(--text-dim);font-size:13px;font-weight:600;">
+            🧪 Entrar en modo demo (sin Firebase)
+          </button>
+        </div>
+      ` : ''}
     </div>
   `;
 
@@ -65,4 +78,9 @@ export function renderLogin(container) {
     }
     // Si tiene éxito, onAuthStateChanged en auth.js dispara el re-render vía app.js
   });
+
+  const demoBtn = document.getElementById('login-demo-btn');
+  if (demoBtn) {
+    demoBtn.addEventListener('click', () => loginDemo());
+  }
 }

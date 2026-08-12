@@ -4,7 +4,7 @@
 // ==========================================================================
 
 import {
-  initFirebase, auth, db,
+  initFirebase, auth, db, CONFIGURED,
   signInWithEmailAndPassword, signOut, onAuthStateChanged, doc, getDoc,
 } from './firebase.js';
 
@@ -54,7 +54,31 @@ export async function login(email, password) {
 }
 
 export async function logout() {
+  if (session.demo) {
+    session.user = null;
+    session.role = null;
+    session.nombre = null;
+    session.demo = false;
+    notify();
+    return;
+  }
   if (auth) await signOut(auth);
+}
+
+// ---------------------------------------------------------------------
+// Modo demo — SOLO disponible mientras Firebase real no esté conectado
+// (CONFIGURED === false). Permite probar toda la app en GitHub Pages sin
+// esperar a tener las credenciales de Firebase. Desaparece automáticamente
+// en cuanto se pega un DEFAULT_FB_CONFIG real en firebase.js.
+// ---------------------------------------------------------------------
+export function loginDemo() {
+  if (CONFIGURED) return; // seguridad: nunca disponible con Firebase real activo
+  session.user = { uid: 'demo', email: 'demo@motocontrol.local' };
+  session.role = 'administrador';
+  session.nombre = 'Angel (modo demo)';
+  session.demo = true;
+  session.ready = true;
+  notify();
 }
 
 function mapAuthError(code) {

@@ -14,6 +14,7 @@ import { renderInversiones, abrirNuevaInversion } from './inversiones.js';
 import { renderGastos, abrirNuevoGasto } from './gastos.js';
 import { renderFinanzas } from './finanzas.js';
 import { renderReportes } from './reportes.js';
+import { renderClientes, abrirNuevoCliente } from './clientes.js';
 import { renderLogin } from './login.js';
 import { initAuth, session, onSessionChange, canAccess, logout } from './auth.js';
 
@@ -68,6 +69,11 @@ const ROUTES = {
   },
   finanzas: { title: 'Finanzas', render: renderFinanzas },
   reportes: { title: 'Reportes', render: renderReportes },
+  clientes: {
+    title: 'Clientes',
+    render: renderClientes,
+    fabAction: () => abrirNuevoCliente(document.getElementById('app-view')),
+  },
 };
 
 // ---------------------------------------------------------------------

@@ -2,7 +2,27 @@
 
 Sistema de gestión para venta de motocicletas de contado y crédito. PWA mobile-first, sin build tools, Firebase + GitHub Pages.
 
-## Estado: Todos los módulos completos excepto Clientes
+## Estado: Todos los módulos operativos construidos (13/13)
+
+**Módulo Clientes** (secciones 11-12) — el último, tal como se decidió:
+
+- CRM completo: expediente con todos los campos de la sección 11 (contacto, dirección, INE/RFC, referencia personal, notas)
+- Detección automática de "clientes sueltos": como Ventas capturaba solo nombre+WhatsApp hasta ahora, este módulo escanea todas las ventas y muestra los que aún no tienen expediente completo — un botón los promueve sin volver a teclear nada
+- Vista de expediente (sección 12) cruzando por teléfono (o nombre si no hay teléfono, ya que los registros viejos no tienen `clienteId`): motos adquiridas, ventas, créditos con saldo, pagos, documentos/contratos, saldo pendiente total y próximo pago
+- FAB en `#clientes` abre directo el formulario de alta
+
+### Con esto quedan construidos los 13 módulos operativos del Prompt Maestro
+
+Motocicletas/Inventario · Ventas · Créditos · Pagos · Contratos · Inversiones · Gastos · Finanzas · Reportes · Clientes · Dashboard · Auth/roles · PWA base.
+
+### Lo que falta para considerarlo "producción" (no construido todavía, por elección o por venir después)
+
+- **Configuración** (sección 51): datos de empresa, texto de contrato editable, moneda/interés por defecto — hoy son constantes hardcodeadas en el código (`EMPRESA` en `contratos.js`)
+- **Firebase real**: todo corre sobre `localStorage` vía el modo demo. Migrar `data.js` de localStorage a Firestore es el paso que conecta esto a la nube y habilita multiusuario real
+- **Recibos de pago individuales y Estado de cuenta como PDF** (secciones 30-31): Contratos ya tiene el generador de PDF (jsPDF) listo para reutilizar aquí
+- **Auditoría** (sección 42): las reglas de Firestore ya tienen la colección preparada, falta que el código escriba en ella
+- **Backup exportar/importar JSON** (sección 43)
+- Íconos PWA reales (192/512/maskable) — siguen sin generarse
 
 **Módulos Inversiones + Gastos** (secciones 34-35): CRUD simple por categoría, historial, resumen mensual. Inversiones permite vincular opcionalmente una motocicleta.
 

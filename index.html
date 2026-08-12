@@ -11,26 +11,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/styles.css">
-<!-- Generación de PDF (Contratos, sección 27) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Salvavidas: si el JS de la app falla (red, error de módulo), esto lo
      muestra en pantalla en vez de dejar una pantalla en blanco silenciosa. -->
 <script>
 window.addEventListener('error', function (e) {
-  var el = document.getElementById('app-view');
-  if (el && !window.__mcLoaded) {
-    el.innerHTML = '<div style="padding:40px 20px;color:#FF3B3B;font-family:sans-serif;font-size:13px;line-height:1.6;">' +
-      '⚠️ Error cargando la app:<br><code style="word-break:break-all;">' + (e.message || 'desconocido') + '</code>' +
-      '<br><br>Prueba con otra red (datos móviles), revisa que no haya un bloqueador de contenido activo, o recarga.</div>';
-  }
+  if (window.__mcLoaded) return;
+  setTimeout(function () {
+    if (window.__mcLoaded) return; // se recuperó por sí sola, no mostrar nada
+    var el = document.getElementById('app-view');
+    if (el) {
+      el.innerHTML = '<div style="padding:40px 20px;color:#FF3B3B;font-family:sans-serif;font-size:13px;line-height:1.6;">' +
+        '⚠️ Error cargando la app:<br><code style="word-break:break-all;">' + (e.message || 'desconocido') + '</code>' +
+        '<br><br>Prueba con otra red (datos móviles), revisa que no haya un bloqueador de contenido activo, o recarga.</div>';
+    }
+  }, 800);
 });
 window.addEventListener('unhandledrejection', function (e) {
-  var el = document.getElementById('app-view');
-  if (el && !window.__mcLoaded) {
-    el.innerHTML = '<div style="padding:40px 20px;color:#FF3B3B;font-family:sans-serif;font-size:13px;line-height:1.6;">' +
-      '⚠️ Error cargando un módulo:<br><code style="word-break:break-all;">' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '</code>' +
-      '<br><br>Prueba con otra red (datos móviles), revisa que no haya un bloqueador de contenido activo, o recarga.</div>';
-  }
+  if (window.__mcLoaded) return;
+  setTimeout(function () {
+    if (window.__mcLoaded) return;
+    var el = document.getElementById('app-view');
+    if (el) {
+      el.innerHTML = '<div style="padding:40px 20px;color:#FF3B3B;font-family:sans-serif;font-size:13px;line-height:1.6;">' +
+        '⚠️ Error cargando un módulo:<br><code style="word-break:break-all;">' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '</code>' +
+        '<br><br>Prueba con otra red (datos móviles), revisa que no haya un bloqueador de contenido activo, o recarga.</div>';
+    }
+  }, 800);
 });
 </script>
 </head>

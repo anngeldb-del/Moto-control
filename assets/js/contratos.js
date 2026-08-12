@@ -90,6 +90,39 @@ function renderList(container) {
 }
 
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// jsPDF se carga bajo demanda (no bloquea la carga inicial de la app).
+// Si la red falla a mitad de la descarga (señal débil), el error queda
+// contenido aquí — ya no puede tumbar el resto de la app.
+// ---------------------------------------------------------------------
+let jsPDFPromise = null;
+function cargarJsPDF() {
+  if (window.jspdf) return Promise.resolve();
+  if (jsPDFPromise) return jsPDFPromise;
+  jsPDFPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = () => resolve();
+    script.onerror = () => { jsPDFPromise = null; reject(new Error('No se pudo cargar el generador de PDF. Revisa tu conexión.')); };
+    document.head.appendChild(script);
+  });
+  return jsPDFPromise;
+}
+
+async function generarYCompartirPDF(item, contrato, botonTrigger) {
+  const textoOriginal = botonTrigger ? botonTrigger.textContent : null;
+  if (botonTrigger) { botonTrigger.textContent = 'Cargando…'; botonTrigger.disabled = true; }
+  try {
+    await cargarJsPDF();
+    const doc = construirPDF(item, contrato);
+    await compartirOPescargarPDF(doc, `${contrato.numero}.pdf`);
+  } catch (err) {
+    alert(err.message || 'No se pudo generar el PDF. Intenta de nuevo con mejor señal.');
+  } finally {
+    if (botonTrigger) { botonTrigger.textContent = textoOriginal; botonTrigger.disabled = false; }
+  }
+}
+
 function numeroContrato() {
   const existentes = getAll(COLLECTION).length;
   return `CONT-${new Date().getFullYear()}-${String(existentes + 1).padStart(3, '0')}`;
@@ -162,9 +195,8 @@ function abrirContrato(container, item) {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 
   if (contratoExistente) {
-    overlay.querySelector('#btn-pdf').addEventListener('click', () => {
-      const doc = construirPDF(item, contratoExistente);
-      compartirOPescargarPDF(doc, `${contratoExistente.numero}.pdf`);
+    overlay.querySelector('#btn-pdf').addEventListener('click', (e) => {
+      generarYCompartirPDF(item, contratoExistente, e.target);
     });
     return;
   }
@@ -222,8 +254,7 @@ function abrirContrato(container, item) {
     overlay.remove();
     renderList(container);
     // Ofrecer descarga inmediata tras firmar
-    const doc = construirPDF(item, contrato);
-    compartirOPescargarPDF(doc, `${numero}.pdf`);
+    generarYCompartirPDF(item, contrato, null);
   });
 }
 

@@ -10,6 +10,10 @@ import { renderVentas, abrirNuevaVenta } from './ventas.js';
 import { renderCreditos } from './creditos.js';
 import { renderPagos, abrirNuevoPago } from './pagos.js';
 import { renderContratos } from './contratos.js';
+import { renderInversiones, abrirNuevaInversion } from './inversiones.js';
+import { renderGastos, abrirNuevoGasto } from './gastos.js';
+import { renderFinanzas } from './finanzas.js';
+import { renderReportes } from './reportes.js';
 import { renderLogin } from './login.js';
 import { initAuth, session, onSessionChange, canAccess, logout } from './auth.js';
 
@@ -52,6 +56,18 @@ const ROUTES = {
     fabAction: () => abrirNuevoPago(document.getElementById('app-view')),
   },
   contratos: { title: 'Contratos', render: renderContratos },
+  inversiones: {
+    title: 'Inversiones',
+    render: renderInversiones,
+    fabAction: () => abrirNuevaInversion(document.getElementById('app-view')),
+  },
+  gastos: {
+    title: 'Gastos',
+    render: renderGastos,
+    fabAction: () => abrirNuevoGasto(document.getElementById('app-view')),
+  },
+  finanzas: { title: 'Finanzas', render: renderFinanzas },
+  reportes: { title: 'Reportes', render: renderReportes },
 };
 
 // ---------------------------------------------------------------------

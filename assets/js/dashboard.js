@@ -7,9 +7,7 @@
 
 import { getAll } from './data.js';
 import { money, hoyISO, calcularCostoTotal, calcularEstadoCredito } from './utilidades.js';
-
-// TODO: reemplazar por datos reales cuando exista el módulo de Finanzas.
-const DEMO_FINANZAS = { capital: 158200, ingresos: 342000, gastos: 61400, utilidadBruta: 122000, utilidadNeta: 96500, disponible: 158200 };
+import { calcular as calcularFinanzas } from './finanzas.js';
 
 function gauge(pct, value, label, sub, color) {
   const clamped = Math.max(0, Math.min(100, pct));
@@ -76,7 +74,7 @@ export function renderDashboard(container) {
   const inventario = calcularInventario();
   const ventas = calcularVentas();
   const creditos = calcularCreditos();
-  const finanzas = DEMO_FINANZAS;
+  const finanzas = calcularFinanzas();
   const totalActivas = inventario.disponibles + inventario.apartadas + inventario.reparacion;
   const carteraVencidaPct = creditos.activos > 0 ? Math.round((creditos.vencidos / creditos.activos) * 100) : 0;
 
@@ -97,7 +95,7 @@ export function renderDashboard(container) {
 
     <div class="section-head">
       <h2>Tablero — vista de 30 segundos</h2>
-      <span class="sub">Inventario/Ventas/Créditos: reales · Finanzas: demo</span>
+      <span class="sub">Todo real — Inventario, Ventas, Créditos, Finanzas</span>
     </div>
     <div class="grid grid-3">
       ${gauge(totalActivas > 0 ? Math.round((inventario.disponibles / totalActivas) * 100) : 0,
@@ -122,12 +120,12 @@ export function renderDashboard(container) {
       ${statCard(creditos.vencidos, 'Pagos vencidos', { dir: 'down', text: `${creditos.morosos} morosos` })}
     </div>
 
-    <div class="section-head"><h2>Finanzas <span class="sub" style="text-transform:none;">(demo)</span></h2></div>
+    <div class="section-head"><h2>Finanzas</h2></div>
     <div class="grid grid-2">
-      ${statCard(money(finanzas.capital), 'Capital disponible')}
-      ${statCard(money(finanzas.utilidadNeta), 'Utilidad neta', { dir: 'up', text: `${money(finanzas.ingresos)} ingresos` })}
-      ${statCard(money(finanzas.gastos), 'Gastos')}
-      ${statCard(money(finanzas.utilidadBruta), 'Utilidad bruta')}
+      ${statCard(money(finanzas.capitalDisponible), 'Capital disponible')}
+      ${statCard(money(finanzas.utilidadNeta), 'Utilidad neta', { dir: 'up', text: `${money(finanzas.totalIngresos)} ingresos` })}
+      ${statCard(money(finanzas.totalGastos), 'Gastos')}
+      ${statCard(money(finanzas.utilidadVentas), 'Utilidad de ventas')}
     </div>
 
     <div class="section-head"><h2>Contratos pendientes</h2></div>

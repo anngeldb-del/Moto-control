@@ -2,7 +2,23 @@
 
 Sistema de gestión para venta de motocicletas de contado y crédito. PWA mobile-first, sin build tools, Firebase + GitHub Pages.
 
-## Estado: Motocicletas/Inventario + Ventas + Créditos + Pagos + Contratos completos
+## Estado: Todos los módulos completos excepto Clientes
+
+**Módulos Inversiones + Gastos** (secciones 34-35): CRUD simple por categoría, historial, resumen mensual. Inversiones permite vincular opcionalmente una motocicleta.
+
+**Módulo Finanzas** (secciones 36-37): calculado 100% de datos reales, sin demo. Distingue explícitamente dos conceptos que no deben mezclarse:
+- **Flujo de efectivo**: dinero que realmente entró/salió (ventas contado + enganches + pagos cobrados − inversiones − gastos)
+- **Utilidad contable**: ganancia reconocida al momento de vender, aunque el crédito siga pagándose a plazos
+
+Esta distinción evita presentar un número inflado o engañoso — es una decisión deliberada de honestidad de datos, no un descuido.
+
+**Módulo Reportes** (sección 38): filtro por rango (hoy/semana/mes/año/todo), resumen de ventas/utilidad/cobrado/gastos/inversiones/inventario, y exportación CSV (compatible Excel) para ventas, pagos, gastos, inversiones e inventario.
+
+**Dashboard**: ya no tiene ningún dato demo — Inventario, Ventas, Créditos y Finanzas son 100% reales, calculados de las mismas colecciones que alimentan cada módulo.
+
+### Único módulo restante: Clientes (al final, como acordamos)
+
+Hasta ahora el "cliente" vive ligero dentro de cada venta (nombre + WhatsApp). El módulo Clientes construirá el expediente completo (CRM, sección 11-12) y podrá vincular retroactivamente estos registros por nombre/teléfono sin perder el historial ya capturado.
 
 **Módulo Contratos** (secciones 22-29):
 

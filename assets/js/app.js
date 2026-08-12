@@ -7,6 +7,9 @@
 import { renderDashboard } from './dashboard.js';
 import { renderMotocicletas, abrirNuevaMoto } from './motocicletas.js';
 import { renderVentas, abrirNuevaVenta } from './ventas.js';
+import { renderCreditos } from './creditos.js';
+import { renderPagos, abrirNuevoPago } from './pagos.js';
+import { renderContratos } from './contratos.js';
 import { renderLogin } from './login.js';
 import { initAuth, session, onSessionChange, canAccess, logout } from './auth.js';
 
@@ -42,6 +45,13 @@ const ROUTES = {
     render: renderVentas,
     fabAction: () => abrirNuevaVenta(document.getElementById('app-view')),
   },
+  creditos: { title: 'Créditos', render: renderCreditos },
+  pagos: {
+    title: 'Pagos',
+    render: renderPagos,
+    fabAction: () => abrirNuevoPago(document.getElementById('app-view')),
+  },
+  contratos: { title: 'Contratos', render: renderContratos },
 };
 
 // ---------------------------------------------------------------------

@@ -7,7 +7,7 @@
 // ==========================================================================
 
 import { getAll, save } from './data.js';
-import { money, uid, hoyISO, calcularCostoTotal, calcularUtilidadEstimada, calcularSaldoFinanciado } from './utilidades.js';
+import { money, uid, hoyISO, calcularCostoTotal, calcularUtilidadEstimada, calcularSaldoFinanciado, generarPlanPagos } from './utilidades.js';
 import { session } from './auth.js';
 
 const COLLECTION = 'ventas';
@@ -314,6 +314,33 @@ function openForm(container) {
     save(COLLECTION, venta);
     // La moto vendida sale del inventario disponible (sección 14/15: "actualizar inventario")
     save(MOTOS_COLLECTION, { ...moto, estado: 'vendida' });
+
+    // Venta a crédito: generar automáticamente el expediente de crédito
+    // con su plan de pagos (secciones 16-17) — no se pide de nuevo nada
+    // que el sistema ya conoce (regla 57).
+    if (venta.tipo === 'credito') {
+      const numeroCredito = 'CR-' + String(getAll('creditos').length + 1).padStart(4, '0');
+      const planPagos = generarPlanPagos(venta.totalAPagar, venta.numPagos, venta.periodicidad, venta.fechaPrimerPago || venta.fecha);
+      save('creditos', {
+        id: uid(),
+        numero: numeroCredito,
+        ventaId: venta.id,
+        clienteNombre: venta.clienteNombre,
+        clienteTelefono: venta.clienteTelefono,
+        motoId: venta.motoId,
+        motoResumen: venta.motoResumen,
+        fechaInicio: venta.fecha,
+        montoOriginal: venta.precio,
+        enganche: venta.enganche,
+        saldoInicial: venta.saldoFinanciado,
+        totalFinanciado: venta.saldoFinanciado,
+        interesPct: venta.interesPct,
+        totalAPagar: venta.totalAPagar,
+        periodicidad: venta.periodicidad,
+        numPagos: venta.numPagos,
+        planPagos,
+      });
+    }
 
     overlay.remove();
     renderList(container);

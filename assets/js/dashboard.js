@@ -6,7 +6,7 @@
 // ==========================================================================
 
 import { getAll } from './data.js';
-import { money, hoyISO, calcularCostoTotal } from './utilidades.js';
+import { money, hoyISO, calcularCostoTotal, calcularEstadoCredito } from './utilidades.js';
 
 // TODO: reemplazar por datos reales cuando exista el módulo de Finanzas.
 const DEMO_FINANZAS = { capital: 158200, ingresos: 342000, gastos: 61400, utilidadBruta: 122000, utilidadNeta: 96500, disponible: 158200 };
@@ -62,18 +62,14 @@ function calcularVentas() {
 }
 
 function calcularCreditos() {
-  const ventas = getAll('ventas').filter((v) => v.tipo === 'credito');
-  const financiado = ventas.reduce((s, v) => s + (Number(v.saldoFinanciado) || 0), 0);
-  // Sin módulo de Pagos todavía, "cobrado" y "vencidos/morosos" se estiman en 0
-  // hasta que exista el registro real de pagos (próxima fase).
-  return {
-    activos: ventas.filter((v) => v.creditoEstado === 'activo').length,
-    financiado,
-    cobrado: 0,
-    saldo: financiado,
-    vencidos: 0,
-    morosos: 0,
-  };
+  const creditos = getAll('creditos').map((c) => ({ ...c, _calc: calcularEstadoCredito(c) }));
+  const activos = creditos.filter((c) => c._calc.estado !== 'liquidado');
+  const financiado = creditos.reduce((s, c) => s + (Number(c.totalFinanciado) || 0), 0);
+  const saldo = creditos.reduce((s, c) => s + c._calc.saldoActual, 0);
+  const cobrado = financiado - saldo;
+  const vencidos = creditos.filter((c) => c._calc.diasAtraso > 0).length;
+  const morosos = creditos.filter((c) => c._calc.estado === 'moroso').length;
+  return { activos: activos.length, financiado, cobrado, saldo, vencidos, morosos };
 }
 
 export function renderDashboard(container) {
@@ -135,9 +131,34 @@ export function renderDashboard(container) {
     </div>
 
     <div class="section-head"><h2>Contratos pendientes</h2></div>
-    <div class="card empty-state">
-      <div class="ico">📄</div>
-      <div class="txt">Módulo de Contratos aún no construido.</div>
-    </div>
+    ${contratosPendientesHtml()}
   `;
 }
+
+function contratosPendientesHtml() {
+  const creditos = getAll('creditos');
+  const contratos = getAll('contratos');
+  const pendientes = creditos.filter((c) => !contratos.find((k) => k.creditoId === c.id));
+
+  if (pendientes.length === 0) {
+    return `
+      <div class="card empty-state">
+        <div class="ico">📄</div>
+        <div class="txt">Sin contratos pendientes.</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card">
+      ${pendientes.slice(0, 5).map((c) => `
+        <a href="#contratos" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:13px;font-weight:600;">${c.clienteNombre}</div>
+            <div class="mono" style="font-size:11px;color:var(--text-dim);">${c.numero} · ${c.motoResumen}</div>
+          </div>
+          <span class="badge danger">CONTRATO PENDIENTE</span>
+        </a>
+      `).join('')}
+    </div>
+  `;

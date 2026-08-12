@@ -2,7 +2,41 @@
 
 Sistema de gestión para venta de motocicletas de contado y crédito. PWA mobile-first, sin build tools, Firebase + GitHub Pages.
 
-## Estado: Motocicletas/Inventario + Ventas completos (sobre Fase 1+2)
+## Estado: Motocicletas/Inventario + Ventas + Créditos + Pagos + Contratos completos
+
+**Módulo Contratos** (secciones 22-29):
+
+- Se genera desde el expediente de crédito existente — no vuelve a pedir cliente/moto/financiero, ya lo toma de Venta+Crédito
+- Vista previa completa: cliente, moto, datos financieros, tabla de pagos, texto de compromiso de pago (editable en el código por ahora — se mueve a Configuración cuando exista ese módulo)
+- Advertencia legal visible: es plantilla administrativa, se recomienda revisión de un profesional antes de usarse como contrato definitivo (no se asume validez jurídica)
+- Firma digital en `<canvas>` — funciona con dedo, stylus o mouse (pointer events)
+- Generación de PDF con jsPDF (CDN, sin build tools): encabezado, cliente, moto, financiero, tabla de pagos completa, compromiso de pago, firma incrustada
+- Compartir: usa el share sheet nativo del teléfono (`navigator.share`) cuando está disponible — en Android esto abre directo el menú con WhatsApp; si el navegador no lo soporta, descarga el PDF
+- Estados: pendiente → firmado (Generado/Enviado quedan preparados en el modelo de datos para cuando se necesiten)
+- Dashboard: el bloque "Contratos pendientes" ahora es real — lista créditos sin contrato con enlace directo al módulo
+
+### ⚠️ Antes de usarlo con clientes reales
+
+1. Personaliza `EMPRESA` en `assets/js/contratos.js` (nombre, teléfono, dirección) — hoy son placeholders
+2. Revisa `TEXTO_COMPROMISO` con un profesional legal antes de usarlo como contrato definitivo
+
+**Módulo Créditos** (secciones 16-18, 20) — de solo consulta, se generan automáticamente desde Ventas:
+
+- Cada venta a crédito crea su expediente: número de crédito (`CR-0001`...), plan de pagos generado con `generarPlanPagos()` (fechas según periodicidad, último pago absorbe el redondeo)
+- Estado calculado en vivo a partir del plan (`calcularEstadoCredito()` en `utilidades.js`, reutilizada por Créditos, Pagos y Dashboard — sin duplicar lógica): al corriente, próximo a vencer, vencido, moroso, liquidado
+- Checklist visual (🟢 pagado / 🟡 próximo / 🔴 vencido) por expediente
+- Ranking de clientes con mayor atraso + botón WhatsApp con mensaje prellenado (nunca se envía automático — abre `wa.me` para que el usuario confirme)
+
+**Módulo Pagos** (sección 19):
+
+- Registrar pago: selecciona crédito → cuota pendiente (marca 🔴 si ya venció) → recargo/descuento opcionales → método de pago
+- Si el cobro cubre la cuota completa, la marca como pagada y actualiza el crédito automáticamente (saldo/estado se recalculan solos)
+- Pago parcial: queda en el historial sin cerrar la cuota (no se pierde el dinero recibido, pero el checklist sigue mostrando pendiente)
+- Resumen: cobrado hoy, cobrado del mes, créditos con saldo pendiente
+
+**Cadena de datos ya conectada de punta a punta:** Motocicleta → Venta a crédito → Crédito (con plan) → Pago → actualiza saldo/estado del crédito → Dashboard refleja todo en tiempo real (financiado, cobrado, saldo, vencidos, morosos — ya no hay datos en 0 por falta de módulo).
+
+Pendiente antes de Contratos: nada bloqueante — Contratos puede generarse ya con los datos de Venta+Crédito existentes.
 
 **Módulo Ventas** (secciones 13-15):
 

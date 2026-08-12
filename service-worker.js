@@ -4,7 +4,7 @@
 // Fase 14: estrategia de cache real + sincronización offline.
 // ==========================================================================
 
-const CACHE_NAME = 'motocontrol-v4';
+const CACHE_NAME = 'motocontrol-v6';
 const SHELL_ASSETS = [
   './index.html',
   './manifest.json',
@@ -13,6 +13,9 @@ const SHELL_ASSETS = [
   './assets/js/dashboard.js',
   './assets/js/motocicletas.js',
   './assets/js/ventas.js',
+  './assets/js/creditos.js',
+  './assets/js/pagos.js',
+  './assets/js/contratos.js',
   './assets/js/data.js',
   './assets/js/utilidades.js',
   './assets/js/firebase.js',

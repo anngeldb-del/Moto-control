@@ -2,7 +2,27 @@
 
 Sistema de gestión para venta de motocicletas de contado y crédito. PWA mobile-first, sin build tools, Firebase + GitHub Pages.
 
-## Estado: Todos los módulos operativos construidos (13/13)
+## Estado: 14/14 módulos operativos construidos (Configuración incluida)
+
+**Módulo Configuración** (sección 51) — reemplaza los datos hardcodeados:
+
+- Empresa: nombre, teléfono, WhatsApp, correo, dirección, RFC
+- Financiera: interés y recargo por defecto, periodicidad por defecto — **Ventas ahora prellena estos valores** en el formulario de crédito en vez de un `0` fijo
+- Documental: texto de compromiso de pago editable (antes vivía hardcodeado en `contratos.js`), pie de página, checkbox de firma de vendedor obligatoria
+- `contratos.js` ya no tiene ninguna constante de empresa/texto — todo lee de `getConfiguracion()` en tiempo real
+
+### Con esto quedan construidos los 14 módulos operativos del Prompt Maestro
+
+Motocicletas/Inventario · Ventas · Créditos · Pagos · Contratos · Inversiones · Gastos · Finanzas · Reportes · Clientes · Configuración · Dashboard · Auth/roles · PWA base.
+
+### Lo que falta para considerarlo "producción"
+
+- **Firebase real**: todo corre sobre `localStorage` vía el modo demo. Migrar `data.js` de localStorage a Firestore conecta esto a la nube y habilita multiusuario real — este es el paso grande pendiente
+- Recibos de pago individuales y Estado de cuenta como PDF (secciones 30-31) — Contratos ya tiene el generador jsPDF listo para reutilizar
+- Auditoría (sección 42) — las reglas de Firestore ya tienen la colección preparada, falta que el código escriba en ella
+- Backup exportar/importar JSON (sección 43)
+- Íconos PWA reales (192/512/maskable)
+- Configura tu empresa real entrando a `#configuracion` en la app (ya no hace falta editar código)
 
 **Módulo Clientes** (secciones 11-12) — el último, tal como se decidió:
 

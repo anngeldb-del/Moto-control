@@ -15,6 +15,7 @@ import { renderGastos, abrirNuevoGasto } from './gastos.js';
 import { renderFinanzas } from './finanzas.js';
 import { renderReportes } from './reportes.js';
 import { renderClientes, abrirNuevoCliente } from './clientes.js';
+import { renderConfiguracion } from './configuracion.js';
 import { renderLogin } from './login.js';
 import { initAuth, session, onSessionChange, canAccess, logout } from './auth.js';
 
@@ -74,6 +75,7 @@ const ROUTES = {
     render: renderClientes,
     fabAction: () => abrirNuevoCliente(document.getElementById('app-view')),
   },
+  configuracion: { title: 'Configuración', render: renderConfiguracion },
 };
 
 // ---------------------------------------------------------------------

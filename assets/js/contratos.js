@@ -11,17 +11,9 @@
 
 import { getAll, save } from './data.js';
 import { money, uid, hoyISO, calcularEstadoCredito } from './utilidades.js';
+import { getConfiguracion } from './configuracion.js';
 
 const COLLECTION = 'contratos';
-
-const EMPRESA = {
-  nombre: 'MotoControl',       // TODO: reemplazar con el nombre real del negocio
-  telefono: '',                 // TODO
-  whatsapp: '',                 // TODO
-  direccion: '',                 // TODO
-};
-
-const TEXTO_COMPROMISO = `El cliente reconoce haber adquirido la motocicleta descrita en el presente documento y manifiesta su compromiso de cubrir el saldo pendiente conforme al calendario de pagos establecido, aceptando las condiciones acordadas entre ambas partes.`;
 
 const ADVERTENCIA_LEGAL = 'Este documento es una plantilla administrativa. Se recomienda revisarlo con un profesional legal antes de usarlo como contrato definitivo — no tiene validez jurídica garantizada por sí mismo.';
 
@@ -146,7 +138,7 @@ function abrirContrato(container, item) {
 
       <div class="card" style="background:var(--surface-2);margin-bottom:14px;">
         <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;">Compromiso de pago</div>
-        <div style="font-size:12px;line-height:1.5;color:var(--text);">${TEXTO_COMPROMISO}</div>
+        <div style="font-size:12px;line-height:1.5;color:var(--text);">${getConfiguracion().textoCompromiso}</div>
       </div>
 
       ${contratoExistente
@@ -239,6 +231,7 @@ function abrirContrato(container, item) {
 // Generación del PDF (sección 27)
 // ---------------------------------------------------------------------
 function construirPDF(item, contrato) {
+  const EMPRESA = getConfiguracion();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'letter' });
   const margin = 15;
@@ -246,7 +239,7 @@ function construirPDF(item, contrato) {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text(EMPRESA.nombre || 'MotoControl', margin, y);
+  doc.text(EMPRESA.nombreEmpresa || 'MotoControl', margin, y);
   y += 6;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -303,7 +296,7 @@ function construirPDF(item, contrato) {
 
   if (y > 230) { doc.addPage(); y = margin; }
   seccion('Compromiso de pago');
-  const compromisoLines = doc.splitTextToSize(TEXTO_COMPROMISO, 180);
+  const compromisoLines = doc.splitTextToSize(EMPRESA.textoCompromiso, 180);
   doc.text(compromisoLines, margin, y);
   y += compromisoLines.length * 5 + 8;
 

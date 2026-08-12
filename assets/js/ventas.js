@@ -9,6 +9,7 @@
 import { getAll, save } from './data.js';
 import { money, uid, hoyISO, calcularCostoTotal, calcularUtilidadEstimada, calcularSaldoFinanciado, generarPlanPagos } from './utilidades.js';
 import { session } from './auth.js';
+import { getConfiguracion } from './configuracion.js';
 
 const COLLECTION = 'ventas';
 const MOTOS_COLLECTION = 'motocicletas';
@@ -150,7 +151,7 @@ function openForm(container) {
             </div>
             <div style="flex:1;">
               <label style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Interés (%)</label>
-              <input type="number" name="interesPct" value="0" style="width:100%;margin-top:4px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+              <input type="number" name="interesPct" value="${getConfiguracion().interesPorDefecto}" style="width:100%;margin-top:4px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
             </div>
           </div>
           <div style="display:flex;gap:8px;">
@@ -161,7 +162,7 @@ function openForm(container) {
             <div style="flex:1;">
               <label style="font-size:11px;color:var(--text-dim);text-transform:uppercase;">Periodicidad</label>
               <select name="periodicidad" style="width:100%;margin-top:4px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
-                ${PERIODICIDADES.map(p => `<option value="${p}" ${p==='Quincenal'?'selected':''}>${p}</option>`).join('')}
+                ${PERIODICIDADES.map(p => `<option value="${p}" ${p===getConfiguracion().periodicidadPorDefecto?'selected':''}>${p}</option>`).join('')}
               </select>
             </div>
           </div>
